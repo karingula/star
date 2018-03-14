@@ -1,43 +1,32 @@
-from apistar import Include, Route
+from apistar import Include, Route, reverse_url
 from apistar.frameworks.wsgi import WSGIApp as App
 from apistar.handlers import docs_urls, static_urls
 from apistar import http
 import typing
 
-def details() -> int:
-    age = 25
-    name = 'karingula'
+def get_players():
+    player_list = ['apple','mango','banana','carrot','radish']
 
-    return age
+    return player_list
 
-def welcome(name: str, request: http.Request, data: http.RequestData):
-    data = {"message": f'welcome to {name}'}
-    data['age'] = details()
-    print(type(name))
-    print(name)
-    # return{
-    # 'method': request.method,
-    #'url': request.url,
-    # 'headers': dict(request.headers),
-    # #'params': dict(query_params),
-    # #'user_agent': dict(user_agent),#here request.headers & http.Headers both are same
-    # 'data': data
-    # }
-    headers={'Location': '/greeting',
-             'url': request.url
-    }
+def get_player_details(player_name):
+    return {'name': player_name}
 
-    return http.Response(data, headers=headers, status=200)
+
+def get_all_players():
+    players = get_players()
+    player_list = [{'name': player, 'url': reverse_url(
+        'get_player_details', player_name=player)} for player in players]
+
+    return {'players': player_list}
+
 
 routes = [
-    Route(path='/greeting/{name}', method='GET', view=welcome),
+    Route(path='/players/', method='GET', view=get_all_players),
+    Route(path='/players/{player_name}/', method='GET', view=get_player_details),
     Include('/docs', docs_urls),
-    Include('/static', static_urls)
 ]
-print(static_urls)
-
 app = App(routes=routes)
-
 
 if __name__ == '__main__':
     app.main()
