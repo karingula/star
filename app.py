@@ -2,12 +2,19 @@ from apistar import Include, Route
 from apistar.frameworks.wsgi import WSGIApp as App
 from apistar.handlers import docs_urls, static_urls
 from apistar import http
+import typing
 
+def details() -> int:
+    age = 25
+    name = 'karingula'
 
+    return age
 
-def welcome(name: str, request: http.Request, query_params: http.QueryParams, user_agent: http.Headers, data: http.RequestData):
+def welcome(name: str, request: http.Request, data: http.RequestData):
     data = {"message": f'welcome to {name}'}
-    print(type(data))
+    data['age'] = details()
+    print(type(name))
+    print(name)
     # return{
     # 'method': request.method,
     #'url': request.url,
@@ -22,13 +29,12 @@ def welcome(name: str, request: http.Request, query_params: http.QueryParams, us
 
     return http.Response(data, headers=headers, status=200)
 
-
-
 routes = [
-    Route('/greeting/{name}', 'GET', welcome),
+    Route(path='/greeting/{name}', method='GET', view=welcome),
     Include('/docs', docs_urls),
     Include('/static', static_urls)
 ]
+print(static_urls)
 
 app = App(routes=routes)
 
