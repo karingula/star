@@ -4,23 +4,21 @@ from apistar.handlers import docs_urls, static_urls
 from apistar.renderers import HTMLRenderer
 import typing
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine Column, Integer, String, Date
+from sqlalchemy import create_engine, Column, Integer, String, Date
 from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
-
-
-
-class Flight():
+#Flight model
+class Flight(Base):
     __tablename__ = 'flight'
 
+    flight_id = Column(Integer, primary_key=True)
     from_location = Column(String)
     to_location = Column(String)
     schedule = Column(Date)
 
-
-
+#create db connection
 engine_string = 'mysql+pymysql://root:@localhost/star'
 engine = create_engine(engine_string)
 Base.metadata.create_all(engine)
@@ -72,8 +70,8 @@ def get_all_players(request: http.Request):
     headers = {'this_is_my_url': request.url}
     return Response(data, headers=headers, status=200)
 
-
-
+for instance in session.query(Flight).all():
+    print(instance.flight_id, instance.from_location, instance.to_location, instance.schedule)
 
 routes = [
     Route(path='/players/', method='GET', view=get_all_players),
