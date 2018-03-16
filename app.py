@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
-#Flight model
+# Flight model
 class Flight(Base):
     __tablename__ = 'flight'
 
@@ -18,13 +18,23 @@ class Flight(Base):
     to_location = Column(String)
     schedule = Column(Date)
 
-#create db connection
+class FlightComponent(typesystem.Object):
+    properties = {
+        'flight_id': typesystem.integer(),
+        'from_location': typesystem.string(max_length=100),
+        'to_location': typesystem.string(max_length=100),
+        'schedule': typesystem.string(max_length=100)
+    }
+
+
+# create db connection
 engine_string = 'mysql+pymysql://root:@localhost/star'
 engine = create_engine(engine_string)
 Base.metadata.create_all(engine)
 Session = sessionmaker()
 Session.configure(bind=engine)
-session=Session()
+session = Session()
+
 
 class Rating(typesystem.Integer):
     minimum = 1
@@ -70,13 +80,18 @@ def get_all_players(request: http.Request):
     headers = {'this_is_my_url': request.url}
     return Response(data, headers=headers, status=200)
 
-for instance in session.query(Flight).all():
-    print(instance.flight_id, instance.from_location, instance.to_location, instance.schedule)
+
+def get_flight_details() -> typing.List[Flight]:
+    data = [FlightComponent(instance) for instance in session.query(Flight).all()]
+    print(data)
+    return data
+
 
 routes = [
     Route(path='/players/', method='GET', view=get_all_players),
     Route(path='/players/{player_name}/',
           method='GET', view=get_player_details),
+    Route(path='/flight', method='GET', view=get_flight_details),
     Include('/docs', docs_urls),
 ]
 settings = {
