@@ -3,7 +3,30 @@ from apistar.frameworks.wsgi import WSGIApp as App
 from apistar.handlers import docs_urls, static_urls
 from apistar.renderers import HTMLRenderer
 import typing
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine Column, Integer, String, Date
+from sqlalchemy.orm import sessionmaker
 
+Base = declarative_base()
+
+
+
+
+class Flight():
+    __tablename__ = 'flight'
+
+    from_location = Column(String)
+    to_location = Column(String)
+    schedule = Column(Date)
+
+
+
+engine_string = 'mysql+pymysql://root:@localhost/star'
+engine = create_engine(engine_string)
+Base.metadata.create_all(engine)
+Session = sessionmaker()
+Session.configure(bind=engine)
+session=Session()
 
 class Rating(typesystem.Integer):
     minimum = 1
@@ -48,6 +71,8 @@ def get_all_players(request: http.Request):
     # return data
     headers = {'this_is_my_url': request.url}
     return Response(data, headers=headers, status=200)
+
+
 
 
 routes = [
