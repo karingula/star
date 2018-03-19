@@ -2,12 +2,34 @@ from apistar import Include, Route, reverse_url, Response, http, typesystem, ann
 from apistar.frameworks.wsgi import WSGIApp as App
 from apistar.handlers import docs_urls, static_urls
 from apistar.renderers import HTMLRenderer
+import datetime
 import typing
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, Column, Integer, String, Date
 from sqlalchemy.orm import sessionmaker
+from apistar.exceptions import TypeSystemError
 
 Base = declarative_base()
+
+#custom typesystem type
+class Date(typesystem.Object):
+    native_type = str
+    errors = {
+        'type': 'Must be a valid date with the format "YYYY-mm-dd" '
+    }
+    def __new__(cls, *args, **kwargs) -> str:
+        if isinstance(args[0], datetime.date):
+            try:
+                return datetime.datetime.strptime(str(args[0]), '%Y-%m-%d').strftime('%b %d %Y')
+            except KeyError:
+                raise TypeSystemError(cls=cls, code='type')
+        elif not args:
+            return args
+        else:
+            raise TypeSystemError(cls=cls, code='type')
+
+def date(**kwargs) -> typing.Type:
+    return type('Date', (Date,), kwargs)
 
 # Flight model
 class Flight(Base):
@@ -16,16 +38,15 @@ class Flight(Base):
     flight_id = Column(Integer, primary_key=True)
     from_location = Column(String)
     to_location = Column(String)
-    schedule = Column(Date)
-
+    schedule = Column(String)
+#Flight Component
 class FlightComponent(typesystem.Object):
     properties = {
         'flight_id': typesystem.integer(),
         'from_location': typesystem.string(max_length=100),
         'to_location': typesystem.string(max_length=100),
-        'schedule': typesystem.string(max_length=100)
+        'schedule': date(),
     }
-
 
 # create db connection
 engine_string = 'mysql+pymysql://root:@localhost/star'
@@ -83,7 +104,7 @@ def get_all_players(request: http.Request):
 
 def get_flight_details() -> typing.List[Flight]:
     data = [FlightComponent(instance) for instance in session.query(Flight).all()]
-    print(data)
+    print(type(data[0]['schedule']))
     return data
 
 
