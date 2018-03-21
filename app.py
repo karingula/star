@@ -155,6 +155,28 @@ list_of_unicoded_tablenames = fine_grained_inspector.get_table_names()
 #table names are unicoded. so encode to normal strings
 #list_of_tablenames = [table_name.encode("utf-8") for table_name in list_of_unicoded_tablenames]
 
+#--------------
+for z in Flight.__table_args__:
+    # Each item of __table_args__ is an UniqueConstraint object
+    # UniqueConstraint object inherits ColumnCollection object
+    # ColumnCollection object inherits util.OrderedProperties object
+    # OrderedProperties object inherits Properties object
+    print(type(z))
+    #__visit_name__, columns are properties of a Properties object
+    print(z.__visit_name__)
+    # columns is a ColumnCollection object which is iterable
+    print(type(z.columns))
+    for y in z.columns:
+        # Each element of ColumnCollection object is a Column object from schema
+        # ex: <class 'sqlalchemy.sql.schema.Column'>
+        print(type(y))
+        #name is the property of Column object which gives the name of the Column of SQLAlchemy model
+        print(y.name)
+    col_list = tuple([k.name for k in z.columns.__iter__()])
+    print(col_list)
+
+# print("UNIQUE: %r" % fine_grained_inspector.__table_args__)
+
 app = App(routes=routes, settings=settings)
 
 if __name__ == '__main__':
