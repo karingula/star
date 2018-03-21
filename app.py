@@ -9,6 +9,11 @@ from sqlalchemy import inspect, create_engine, Integer, String, Date, Column, Fo
 from sqlalchemy.engine import reflection
 from sqlalchemy.orm import sessionmaker
 from apistar.exceptions import TypeSystemError
+import pandas as pd
+from collections import defaultdict
+import json
+from sqlalchemy.sql.base import ColumnCollection
+from sqlalchemy.schema import Column
 
 Base = declarative_base()
 
@@ -43,15 +48,16 @@ class Flight(Base):
     __tablename__ = 'flight'
 
     flight_id = Column(Integer, primary_key=True)
-    from_location = Column(String)
+    from_location = Column(String, unique=True)
     to_location = Column(String)
     schedule = Column(String)
-    __table_args__ = (UniqueConstraint('flight_id', 'schedule', name='flight_schedule'),)
+    __table_args__ = (UniqueConstraint('flight_id', 'schedule', name='flight_schedule'),
+                      UniqueConstraint('to_location', name='to'))
 
 # Flight Component
 
 
-class FlightComponent(typesystem.Object):
+class FlightComponent(object):
     properties = {
         'flight_id': typesystem.integer(),
         'from_location': typesystem.string(max_length=100),
@@ -113,12 +119,11 @@ def get_all_players(request: http.Request):
     headers = {'this_is_my_url': request.url}
     return Response(data, headers=headers, status=200)
 
-
 def get_flight_details() -> typing.List[Flight]:
     data = [FlightComponent(instance)
             for instance in session.query(Flight).all()]
     print(type(data[0]['schedule']))
-    return data
+    return json.dumps(output, default=myconverter)
 
 
 routes = [
@@ -134,15 +139,22 @@ settings = {
         'PACKAGE_DIRS': ['apistar']  # Built-in apistar templates
     }
 }
+#One way of getting all primary keys
 fine_grained_inspector = reflection.Inspector.from_engine(engine)
-#get all the table names. Apistar implicityly encodes the below list_of_unicoded_tablenames
-list_of_unicoded_tablenames = fine_grained_inspector.get_table_names()
-#table names are unicoded. so encode to normal strings
-#list_of_tablenames = [table_name.encode("utf-8") for table_name in list_of_unicoded_tablenames]
-print(list_of_unicoded_tablenames)
+print("PK:",fine_grained_inspector.get_pk_constraint("flight"))
+
+#Second way of getting all primary keys
 ins = inspect(Flight)
 for x in ins.primary_key:
     print(x.key)
+
+#get all the table names. Apistar implicityly encodes the below list_of_unicoded_tablenames
+list_of_unicoded_tablenames = fine_grained_inspector.get_table_names()
+
+#Away from Apistar, we need to explicitly encode
+#table names are unicoded. so encode to normal strings
+#list_of_tablenames = [table_name.encode("utf-8") for table_name in list_of_unicoded_tablenames]
+
 app = App(routes=routes, settings=settings)
 
 if __name__ == '__main__':
