@@ -5,18 +5,22 @@ from apistar.renderers import HTMLRenderer
 import datetime
 import typing
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, Column, Integer, String, Date
+from sqlalchemy import inspect, create_engine, Integer, String, Date, Column, ForeignKey, UniqueConstraint
+from sqlalchemy.engine import reflection
 from sqlalchemy.orm import sessionmaker
 from apistar.exceptions import TypeSystemError
 
 Base = declarative_base()
 
-#custom typesystem type
+# custom typesystem type
+
+
 class Date(typesystem.Object):
     native_type = str
     errors = {
         'type': 'Must be a valid date with the format "YYYY-mm-dd" '
     }
+
     def __new__(cls, *args, **kwargs) -> str:
         if isinstance(args[0], datetime.date):
             try:
@@ -28,10 +32,13 @@ class Date(typesystem.Object):
         else:
             raise TypeSystemError(cls=cls, code='type')
 
+
 def date(**kwargs) -> typing.Type:
     return type('Date', (Date,), kwargs)
 
 # Flight model
+
+
 class Flight(Base):
     __tablename__ = 'flight'
 
@@ -39,7 +46,11 @@ class Flight(Base):
     from_location = Column(String)
     to_location = Column(String)
     schedule = Column(String)
-#Flight Component
+    __table_args__ = (UniqueConstraint('flight_id', 'schedule', name='flight_schedule'),)
+
+# Flight Component
+
+
 class FlightComponent(typesystem.Object):
     properties = {
         'flight_id': typesystem.integer(),
@@ -47,6 +58,7 @@ class FlightComponent(typesystem.Object):
         'to_location': typesystem.string(max_length=100),
         'schedule': date(),
     }
+
 
 # create db connection
 engine_string = 'mysql+pymysql://root:@localhost/star'
@@ -103,7 +115,8 @@ def get_all_players(request: http.Request):
 
 
 def get_flight_details() -> typing.List[Flight]:
-    data = [FlightComponent(instance) for instance in session.query(Flight).all()]
+    data = [FlightComponent(instance)
+            for instance in session.query(Flight).all()]
     print(type(data[0]['schedule']))
     return data
 
@@ -121,6 +134,15 @@ settings = {
         'PACKAGE_DIRS': ['apistar']  # Built-in apistar templates
     }
 }
+fine_grained_inspector = reflection.Inspector.from_engine(engine)
+#get all the table names. Apistar implicityly encodes the below list_of_unicoded_tablenames
+list_of_unicoded_tablenames = fine_grained_inspector.get_table_names()
+#table names are unicoded. so encode to normal strings
+#list_of_tablenames = [table_name.encode("utf-8") for table_name in list_of_unicoded_tablenames]
+print(list_of_unicoded_tablenames)
+ins = inspect(Flight)
+for x in ins.primary_key:
+    print(x.key)
 app = App(routes=routes, settings=settings)
 
 if __name__ == '__main__':
