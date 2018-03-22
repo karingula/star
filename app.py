@@ -123,7 +123,7 @@ def get_flight_details() -> typing.List[Flight]:
     data = [FlightComponent(instance)
             for instance in session.query(Flight).all()]
     print(type(data[0]['schedule']))
-    return json.dumps(output, default=myconverter)
+    return data
 
 
 routes = [
@@ -155,7 +155,7 @@ list_of_unicoded_tablenames = fine_grained_inspector.get_table_names()
 #table names are unicoded. so encode to normal strings
 #list_of_tablenames = [table_name.encode("utf-8") for table_name in list_of_unicoded_tablenames]
 
-#--------------
+# Ripping __table_args__ apart for clear understanding
 for z in Flight.__table_args__:
     # Each item of __table_args__ is an UniqueConstraint object
     # UniqueConstraint object inherits ColumnCollection object
@@ -173,8 +173,11 @@ for z in Flight.__table_args__:
         #name is the property of Column object which gives the name of the Column of SQLAlchemy model
         print(y.name)
     col_list = tuple([k.name for k in z.columns.__iter__()])
-    print(col_list)
+    print("This is col list:",col_list)
 
+# One-liner
+tup_lst = [tuple(k.name for k in z.columns.__iter__()) for z in Flight.__table_args__]
+print("This is tuple list:",tup_lst)
 # print("UNIQUE: %r" % fine_grained_inspector.__table_args__)
 
 app = App(routes=routes, settings=settings)
