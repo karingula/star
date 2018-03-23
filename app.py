@@ -48,7 +48,7 @@ class Flight(Base):
     __tablename__ = 'flight'
 
     flight_id = Column(Integer, primary_key=True)
-    from_location = Column(String, unique=True)
+    from_location = Column(String, primary_key=True)
     to_location = Column(String)
     schedule = Column(String)
     __table_args__ = (UniqueConstraint('flight_id', 'schedule', name='flight_schedule'),
@@ -145,9 +145,9 @@ print("PK:",fine_grained_inspector.get_pk_constraint("flight"))
 
 #Second way of getting all primary keys
 ins = inspect(Flight)
-for x in ins.primary_key:
-    print(x.key)
+pk_list = [x.key for x in ins.primary_key]
 
+print(pk_list)
 #get all the table names. Apistar implicityly encodes the below list_of_unicoded_tablenames
 list_of_unicoded_tablenames = fine_grained_inspector.get_table_names()
 
@@ -175,12 +175,24 @@ for z in Flight.__table_args__:
     col_list = tuple([k.name for k in z.columns.__iter__()])
     print("This is col list:",col_list)
 
-# One-liner
+# One-liner to get all UniqueConstraints
 tup_lst = [tuple(k.name for k in z.columns.__iter__()) for z in Flight.__table_args__]
 print("This is tuple list:",tup_lst)
 # print("UNIQUE: %r" % fine_grained_inspector.__table_args__)
 
+#create a dataframe
+list1 = [1, ('Vanc','ouver', 'Canada'), 'Toronto', '3-Jan']
+list2 = [2, ('Amst','erdam', 'Netherlands'), 'Tokyo', '15-Feb']
+list3 = [4, ('Fair','banks', 'US'), 'Glasgow', '12-Jan']
+list4 = [9, ('Halm','stad', 'Norway'), 'Athens', '21-Jan']
+list5 = [3, ('Bris','bane', 'Australia'), 'Toronto', '4-Feb']
+list6 = [4, ('Johan','nesburg', 'South Africa'), 'Venice', '12-Jan']
+list7 = [9, ('Hyde','rabad', 'India'), 'Kiev', '20-Oct']
+data = [list1,list2,list3,list4,list5,list6]
+df = pd.DataFrame(data, columns=['flight_id','from_location','to_location','schedule'])
+
 app = App(routes=routes, settings=settings)
+
 
 if __name__ == '__main__':
     app.main()
