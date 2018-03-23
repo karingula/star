@@ -5,11 +5,12 @@ from apistar.renderers import HTMLRenderer
 import datetime
 import typing
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import inspect, create_engine, Integer, String, Date, Column, ForeignKey, UniqueConstraint
+from sqlalchemy import inspect, create_engine, Integer, String, Date, Column, ForeignKey, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.engine import reflection
 from sqlalchemy.orm import sessionmaker
 from apistar.exceptions import TypeSystemError
 import pandas as pd
+from sqlalchemy.inspection import inspect
 from collections import defaultdict
 import json
 from sqlalchemy.sql.base import ColumnCollection
@@ -47,12 +48,13 @@ def date(**kwargs) -> typing.Type:
 class Flight(Base):
     __tablename__ = 'flight'
 
-    flight_id = Column(Integer, primary_key=True)
-    from_location = Column(String, primary_key=True)
+    flight_id = Column(Integer)
+    from_location = Column(String)
     to_location = Column(String)
     schedule = Column(String)
     __table_args__ = (UniqueConstraint('flight_id', 'schedule', name='flight_schedule'),
-                      UniqueConstraint('to_location', name='to'))
+                      UniqueConstraint('to_location', name='to'),
+                      PrimaryKeyConstraint('flight_id'))
 
 # Flight Component
 
@@ -139,23 +141,12 @@ settings = {
         'PACKAGE_DIRS': ['apistar']  # Built-in apistar templates
     }
 }
-#One way of getting all primary keys
-fine_grained_inspector = reflection.Inspector.from_engine(engine)
-print("PK:",fine_grained_inspector.get_pk_constraint("flight"))
 
-#Second way of getting all primary keys
-ins = inspect(Flight)
-pk_list = [x.key for x in ins.primary_key]
-
-print(pk_list)
-#get all the table names. Apistar implicityly encodes the below list_of_unicoded_tablenames
-list_of_unicoded_tablenames = fine_grained_inspector.get_table_names()
-
-#Away from Apistar, we need to explicitly encode
-#table names are unicoded. so encode to normal strings
-#list_of_tablenames = [table_name.encode("utf-8") for table_name in list_of_unicoded_tablenames]
-
-# Ripping __table_args__ apart for clear understanding
+#getting all primary keys
+pk_list = [x.key for x in inspect(Flight).primary_key]
+print("Normal Inspection:", pk_list)
+#
+#  Ripping __table_args__ apart for clear understanding
 for z in Flight.__table_args__:
     # Each item of __table_args__ is an UniqueConstraint object
     # UniqueConstraint object inherits ColumnCollection object
@@ -175,10 +166,20 @@ for z in Flight.__table_args__:
     col_list = tuple([k.name for k in z.columns.__iter__()])
     print("This is col list:",col_list)
 
-# One-liner to get all UniqueConstraints
-tup_lst = [tuple(k.name for k in z.columns.__iter__()) for z in Flight.__table_args__]
-print("This is tuple list:",tup_lst)
-# print("UNIQUE: %r" % fine_grained_inspector.__table_args__)
+def lisftify_columns(Table):
+    '''Get all the Columns enforced by constraints
+    '''
+    pk_cols = []
+    uc_cols = []
+    for z in Table.__table_args__:
+        if z.__visit_name__ == 'unique_constraint':
+            uc_cols.append(tuple([k.name for k in z.columns.__iter__()]))
+        elif z.__visit_name__ == 'primary_key_constraint':
+            pk_cols.append(tuple([k.name for k in z.columns.__iter__()]))
+    return uc_cols, pk_cols
+
+#getting all the columns involved in UniqueConstraints and PrimaryKeyConstraint separately
+uc_cols, pk_cols = lisftify_columns(Flight)
 
 #create a dataframe
 list1 = [1, ('Vanc','ouver', 'Canada'), 'Toronto', '3-Jan']
@@ -188,8 +189,26 @@ list4 = [9, ('Halm','stad', 'Norway'), 'Athens', '21-Jan']
 list5 = [3, ('Bris','bane', 'Australia'), 'Toronto', '4-Feb']
 list6 = [4, ('Johan','nesburg', 'South Africa'), 'Venice', '12-Jan']
 list7 = [9, ('Hyde','rabad', 'India'), 'Kiev', '20-Oct']
-data = [list1,list2,list3,list4,list5,list6]
+data = [list1,list2,list3,list4,list5,list6,list7]
 df = pd.DataFrame(data, columns=['flight_id','from_location','to_location','schedule'])
+
+class Violation():
+    def fetch_violation_records(self, col_collection):
+        v_records = df.groupby(col_collection).apply(lambda d: tuple(d.index) if len(d.index) > 1 else None).dropna().tolist()
+        #df_uc = df[df.duplicated(list(col_collection), keep=False)].index.values.tolist()
+        #append only if df_uc is not empty
+        if v_records:
+            v_records.append(col_collection)
+        return tuple(v_records)
+
+violation_checker = Violation()
+
+#get all the columns which violated the unique constraints
+uc_violations = list(map(violation_checker.fetch_violation_records, uc_cols))
+print("UC_Violations",uc_violations)
+#get all the columns which violated the primary key
+pk_violations = list(map(violation_checker.fetch_violation_records, pk_cols))
+print("PK Violations:", pk_violations)
 
 app = App(routes=routes, settings=settings)
 
