@@ -14,7 +14,7 @@ class Violation():
 
     def fetch_violation_records_nullable(self, df, cols):
         #s is a Series
-        s = df.stack(dropna=False)
+        s = df[cols].stack(dropna=False)
         v_data = s[s.isnull()]
         v_records = [v_data.index[i] for i in range(v_data.size)]
         return v_records
