@@ -104,29 +104,35 @@ for z in Flight.__table_args__:
     col_list = tuple([k.name for k in z.columns.__iter__()])
     print("This is col list:",col_list)
 
+uc_cols = []
+pk_cols = []
+nul_cols = []
 #getting all the columns involved in UniqueConstraints and PrimaryKeyConstraint separately
 uc_cols, pk_cols = service.lisftify_columns(Flight)
 pk_cols+=pk_list
 #create a dataframe
 list1 = [1, ('Vanc','ouver', 'Canada'), 'Toronto', '3-Jan']
-list2 = [2, ('Amst','erdam', 'Netherlands'), 'Tokyo', '15-Feb']
-list3 = [4, ('Fair','banks', 'US'), 'Glasgow', '12-Jan']
+list2 = [2, ('Amst','erdam', 'Netherlands'), None, '15-Feb']
+list3 = [4, None, 'Glasgow', '12-Jan']
 list4 = [9, ('Halm','stad', 'Norway'), 'Athens', '21-Jan']
 list5 = [3, ('Bris','bane', 'Australia'), 'Toronto', '4-Feb']
 list6 = [4, ('Johan','nesburg', 'South Africa'), 'Venice', '12-Jan']
-list7 = [9, ('Hyde','rabad', 'India'), 'Kiev', '20-Oct']
+list7 = [9, None, None, '20-Oct']
 data = [list1,list2,list3,list4,list5,list6,list7]
 df = pd.DataFrame(data, columns=['flight_id','from_location','to_location','schedule'])
 
 violation_checker = service.Violation()
 
 #get all the columns which violated the unique constraints
-uc_violations = list(map(functools.partial(violation_checker.fetch_violation_records, df=df), uc_cols))
+uc_violations = list(map(functools.partial(violation_checker.fetch_violation_records_uniqueness, df=df), uc_cols))
 print("UC_Violations",uc_violations)
-#get all the columns which violated the primary key constraints
-pk_violations = list(map(functools.partial(violation_checker.fetch_violation_records, df=df), pk_cols))
+# get all the columns which violated the primary key constraints
+pk_violations = list(map(functools.partial(violation_checker.fetch_violation_records_uniqueness, df=df), pk_cols))
 print("PK Violations:", pk_violations)
-
+nul_cols = [col.name for col in Flight.__table__.columns if not col.nullable]
+# print("Nullable Cols:",nul_cols)
+nul_violations = violation_checker.fetch_violation_records_nullable(df=df,cols=nul_cols)
+print("Nullable Violations:", nul_violations)
 app = App(routes=routes, settings=settings)
 
 

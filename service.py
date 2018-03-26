@@ -3,17 +3,26 @@ import typing
 # custom typesystem type
 
 class Violation():
-    def fetch_violation_records(self, col_collection, df):
-        v_records = df.groupby(col_collection).apply(lambda d: tuple(d.index) if len(d.index) > 1 else None).dropna().tolist()
+
+    def fetch_violation_records_uniqueness(self, col_collection, df):
+        v_records = []
+        v_records = df.groupby(col_collection).apply(lambda d: tuple(d.index) if len(d.index) > 1 else None).dropna().values.tolist()
         #append only if v_records is not empty
         if v_records:
             v_records.append(col_collection)
         return tuple(v_records)
 
+    def fetch_violation_records_nullable(self, df, cols):
+        #s is a Series
+        s = df.stack(dropna=False)
+        v_data = s[s.isnull()]
+        v_records = [v_data.index[i] for i in range(v_data.size)]
+        return v_records
+
 class Date(typesystem.Object):
     native_type = str
     errors = {
-        'type': 'Must be a valid date with the format "YYYY-mm-dd" '
+        'type': 'Must be a valid date with the format "YYYY-mm-dd"'
     }
 
     def __new__(cls, *args, **kwargs) -> str:
