@@ -5,10 +5,10 @@ from db import Base
 class Flight(Base):
     __tablename__ = 'flight'
 
-    flight_id = Column(Integer)
+    flight_id = Column(Integer, primary_key=True)
     from_location = Column(String)
     to_location = Column(String)
     schedule = Column(String)
     __table_args__ = (UniqueConstraint('flight_id', 'schedule', name='flight_schedule'),
                       UniqueConstraint('to_location', name='to'),
-                      PrimaryKeyConstraint('flight_id'))
+                      )

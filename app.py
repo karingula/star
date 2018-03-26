@@ -8,6 +8,7 @@ import pandas as pd
 import typing, functools
 from sqlalchemy.sql.base import ColumnCollection
 from sqlalchemy.schema import Column
+from sqlalchemy import inspect
 import service
 from models import Flight
 from components import FlightComponent
@@ -79,9 +80,10 @@ settings = {
 }
 
 #getting all primary keys
-# pk_list = [x.key for x in inspect(Flight).primary_key]
-# print("Normal Inspection:", pk_list)
-#
+pk_list = []
+pk_list = [x.key for x in inspect(Flight).primary_key]
+print("Normal Inspection:", pk_list)
+
 #  Ripping __table_args__ apart for clear understanding
 for z in Flight.__table_args__:
     # Each item of __table_args__ is an UniqueConstraint object
@@ -104,7 +106,7 @@ for z in Flight.__table_args__:
 
 #getting all the columns involved in UniqueConstraints and PrimaryKeyConstraint separately
 uc_cols, pk_cols = service.lisftify_columns(Flight)
-
+pk_cols+=pk_list
 #create a dataframe
 list1 = [1, ('Vanc','ouver', 'Canada'), 'Toronto', '3-Jan']
 list2 = [2, ('Amst','erdam', 'Netherlands'), 'Tokyo', '15-Feb']
