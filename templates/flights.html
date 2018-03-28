@@ -1,5 +1,12 @@
 {% extends 'base.html' %}
 
 {% block body %}
+<div class="continer">
+  {{ data }}
+  <form action="/flight/add" method="post">
+    <input type="text" name="greetings">
+    <button type="submit">Submit</button>
+  </form>
+</div>
 
 {% endblock %}
