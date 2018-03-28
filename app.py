@@ -10,8 +10,9 @@ from sqlalchemy.sql.base import ColumnCollection
 from sqlalchemy.schema import Column
 from sqlalchemy import inspect
 import service
-from models import Flight
+import models as Models
 from components import FlightComponent
+from db import session
 
 
 class Rating(typesystem.Integer):
@@ -58,20 +59,22 @@ def get_all_players(request: http.Request):
     headers = {'this_is_my_url': request.url}
     return Response(data, headers=headers, status=200)
 
-def get_flight_details() -> typing.List[Flight]:
+def get_flight_details() -> typing.List[Models.Flight]:
     data = [FlightComponent(instance)
-            for instance in session.query(Flight).all()]
-    print(type(data[0]['schedule']))
+            for instance in session.query(Models.Flight).all()]
     return data
 
+def add_flight(message: str):
+    print("Inside the add flight details")
+    return {'question': 'how are you?'}
 
 routes = [
-    Route(path='/players/', method='GET', view=get_all_players),
-    Route(path='/players/{player_name}/',
-          method='GET', view=get_player_details),
-    Route(path='/flight', method='GET', view=get_flight_details),
-    Include('/docs', docs_urls),
+    Route('/players', 'GET', get_all_players),
+    Route('/players/{player_name}', 'GET', get_player_details),
+    Route('/flights', 'GET', get_flight_details),
+    Route('/flight/add', 'POST' , add_flight),
 ]
+engine_string = 'mysql+pymysql://root:@localhost/star'
 settings = {
     'TEMPLATES': {
         'ROOT_DIR': 'templates',
@@ -134,7 +137,6 @@ nul_cols = [col.name for col in Flight.__table__.columns if not col.nullable]
 nul_violations = violation_checker.fetch_violation_records_nullable(df=df,cols=nul_cols)
 print("Nullable Violations:", nul_violations)
 app = App(routes=routes, settings=settings)
-
 
 if __name__ == '__main__':
     app.main()

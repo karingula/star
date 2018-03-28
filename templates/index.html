@@ -1,5 +1,9 @@
-<html>
-  <body>
-    <h1>Hello! {{ player_name }}</h1>
-  </body>
-</html>
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Hello! {{ player_name }}</h1>
+</div>
+
+
+{% endblock %}

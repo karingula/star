@@ -2,7 +2,7 @@ from apistar import typesystem
 import service
 # Flight Component
 
-class FlightComponent(object):
+class FlightComponent(typesystem.Object):
     properties = {
         'flight_id': typesystem.integer(),
         'from_location': typesystem.string(max_length=100),
