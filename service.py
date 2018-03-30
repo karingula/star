@@ -47,7 +47,7 @@ def lisftify_columns(Table):
     uc_cols = []
     for z in Table.__table_args__:
         if z.__visit_name__ == 'unique_constraint':
-            uc_cols.append(tuple([k.name for k in z.columns.__iter__()]))
+            uc_cols.append(tuple([k for k in z.columns.__iter__()]))
         elif z.__visit_name__ == 'primary_key_constraint':
-            pk_cols.append(tuple([k.name for k in z.columns.__iter__()]))
+            pk_cols.append(tuple([k for k in z.columns.__iter__()]))
     return uc_cols, pk_cols

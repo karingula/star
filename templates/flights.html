@@ -4,7 +4,12 @@
 <div class="continer">
   {{ data }}
   <form action="/flight/add" method="post">
-    <input type="text" name="greetings">
+    <label for="from_location">From:</label>
+    <input type="text" name="from"></br>
+    <label for="to_location">To:</label>
+    <input type="text" name="to"></br>
+    <label for="schedule">Schedule:</label>
+    <input type="text" name="schedule"></br>
     <button type="submit">Submit</button>
   </form>
 </div>
