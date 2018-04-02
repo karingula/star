@@ -14,6 +14,7 @@ from models import Flight
 from components import FlightComponent
 from db import session
 import pandas as pd
+import csv
 
 class Rating(typesystem.Integer):
     minimum = 1
@@ -71,31 +72,36 @@ def get_flight_details(request: http.Request) -> typing.List[Flight]:
 def add_flight(data:http.RequestData):
 
     #---------Getting the data from form and constructing the Dataframe
-    # flight_data = data.to_dict(flat=False)
-    # print(flight_data)
+    flight_data = data.to_dict(flat=False)
+    # The uploadedfile is of type list of FileStorage
+    print(type(flight_data['uploadedfile']))
+    #save the file object as dst
+    flight_data['uploadedfile'][0].save('dst')
+    # read the csv file object to dataframe
+    df= pd.read_csv('dst')
+    return "Sleep with Fishes!"
     # df = pd.DataFrame.from_dict(flight_data, orient='columns')
 
     #----------- Creating a dummy dataframe for testing purposes
-    list1 = ['Halmstad', 'Athens', '2018-01-21']
-    list2 = ['Johannesburg', 'Venice', '2018-01-12']
-    list3 = ['Boston', 'Amsterdam', '2018-08-21']
-    data = [list1, list2,list3]
-    df = pd.DataFrame(data,columns=['from_location','to_location','schedule'])
-    # getting all primary keys
-    pk_list = []
-    pk_list = [x for x in inspect(Flight).primary_key]
-    uc_cols = []
-    pk_cols = []
-    nul_cols = []
-    # get all the columns involved in UniqueConstraints and PrimaryKeyConstraint separately
-    uc_cols, pk_cols = service.lisftify_columns(Flight)
-    pk_cols+=pk_list
-    #get all the records of df which are already in database
-    rtn_df = service.get_specific_records(df, Flight, uc_cols, session)
-
-    message = "DataFrame created!"
-
-    return render_template('index.html', message=message)
+    # list1 = ['Halmstad', 'Athens', '2018-01-21']
+    # list2 = ['Johannesburg', 'Venice', '2018-01-12']
+    # list3 = ['Boston', 'Amsterdam', '2018-08-21']
+    # data = [list1, list2,list3]
+    # df = pd.DataFrame(data,columns=['from_location','to_location','schedule'])
+    # # getting all primary keys
+    # pk_list = []
+    # pk_list = [x for x in inspect(Flight).primary_key]
+    # uc_cols = []
+    # pk_cols = []
+    # nul_cols = []
+    # # get all the columns involved in UniqueConstraints and PrimaryKeyConstraint separately
+    # uc_cols, pk_cols = service.lisftify_columns(Flight)
+    # pk_cols+=pk_list
+    # #get all the records of df which are already in database
+    # rtn_df = service.get_specific_records(df, Flight, uc_cols, session)
+    # message = "DataFrame created!"
+    #
+    # return render_template('index.html', message=message)
 
 routes = [
     Route('/players', 'GET', get_all_players),
