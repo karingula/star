@@ -53,17 +53,6 @@
 # nul_violations = violation_checker.fetch_violation_records_nullable(df=df,cols=nul_cols)
 # print("Nullable Violations:", nul_violations)
 
-
-
-
-
-
-
-
-
-
-
-#
 # a_list format is [Model.column == df.record.value]
 # # a_list = [Flight.to_location=='Vancouver', Flight.from_location=='Boston']
 # # b_list = [Flight.schedule == '2018-07-20',and_(*a_list)]

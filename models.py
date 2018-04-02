@@ -9,5 +9,5 @@ class Flight(Base):
     from_location = Column(String, nullable=False)
     to_location = Column(String, nullable=False)
     schedule = Column(String)
-    __table_args__ = (UniqueConstraint('flight_id', 'schedule', name='flight_schedule'),
+    __table_args__ = (UniqueConstraint('from_location', 'schedule', name='flight_schedule'),
                       UniqueConstraint('to_location', name='to'),)

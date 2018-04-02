@@ -1,6 +1,9 @@
 from apistar import typesystem
+from db import Base
 import typing, datetime
-# custom typesystem type
+from functools import partial
+from sqlalchemy import and_, or_
+import pandas as pd
 
 class Violation():
 
@@ -19,6 +22,7 @@ class Violation():
         v_records = [v_data.index[i] for i in range(v_data.size)]
         return v_records
 
+# custom typesystem type
 class Date(typesystem.Object):
     native_type = str
     errors = {
@@ -51,3 +55,34 @@ def lisftify_columns(Table):
         elif z.__visit_name__ == 'primary_key_constraint':
             pk_cols.append(tuple([k for k in z.columns.__iter__()]))
     return uc_cols, pk_cols
+
+def get_a_o_list(row, cols):
+
+    o_list = []
+    for col_tup in cols:
+        a_list = []
+        for col in col_tup:
+            a_list.append(col.__eq__(row[col.name]))
+        o_list.append(a_list)
+    return o_list
+
+def get_specific_records(df, Model:Base, cols, session):
+    """Execute bulk SQL SELECT on database
+    Args:
+        df (pandas.DataFrame): dataframe
+        cols (list of tuples): column patterns on which there are constraints
+        session (sqlalchemy.orm.Session): handles commit/rollback behavior
+    Returns:
+        A pandas.DataFrame with the added translated column, if not already present in the pandas.DataFrame.
+    """
+
+    arguments = partial(get_a_o_list, cols=cols)
+    #This(bexp_list)is a Series object if not casted to list
+    bexp_list = df.apply(arguments, axis=1).tolist()
+    flat_bexp_list = [item for sub_list in bexp_list for item in sub_list]
+    or_clause = [and_(*b_exp) for b_exp in flat_bexp_list]
+    s = session.query(Model).filter(or_(*or_clause)).statement
+    rtn_df = pd.read_sql(s, session.bind)
+    print(rtn_df)
+
+    return rtn_df
