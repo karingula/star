@@ -115,10 +115,10 @@ class Loader(object):
             # Only import py files not this file
             if os.path.isfile(file_path) and file_name.endswith(".py") and not file_name.startswith('_'):
                 # Get the relative path to the module from the package root
-                # Example => IntelliaLIMS\lib\IntelliaLIMSModels\__init__.py -> IntelliaLIMS\lib\IntelliaLIMSModels
+                
                 module_root_path = os.path.split(self.file)[0]
                 # Splits the file path with the module root
-                # Example => C:\Users\andrew.carretta\Development\IntelliaLIMS\lib\IntelliaLIMSModels\src\access.py -> \src\access.py
+                
                 file_path = file_path.split(module_root_path)[1]
                 # Sanitizes the forward and back slashes into dot notation
                 # Example => \src\access.py -> .src.access.py

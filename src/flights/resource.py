@@ -6,7 +6,7 @@ class FlightResource():
     """This is a Flight Resource
     """
     def get_flight_details(request: http.Request):
-        print(request.method)
+        #print(request.method)
         data = [FlightComponent(instance)
                 for instance in session.query(Flight).all()]
 
