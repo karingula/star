@@ -1,8 +1,7 @@
 #Flight Resource __init__
 
-
 __routes__ = []
-__route_name__ = 'flights'
+__route_name__ = 'food'
 
 from apistar import Route
 from ...lib.loader import Loader
@@ -10,11 +9,11 @@ from ...lib.loader import Loader
 loader = Loader(globals())
 
 #resources
-_fr = FlightResource()
+_fo = FoodResource()
 
 __routes__ = [
-    Route('/flights', method='GET', handler=_fr.get_flight_details),
-    Route('/flight/add', method='POST' , handler=_fr.add_flight),
+    Route('/food/organic/', method='GET', handler=_fo.eat_nicely),
+    Route('/food/fancy/', method='GET', handler=_fo.eat_fancy)
 ]
 
 

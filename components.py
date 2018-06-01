@@ -1,5 +1,6 @@
 from apistar import Component
 class Organic(object):
+
     def __init__(self, eats: dict):
         self.eats = eats
 
