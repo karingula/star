@@ -29,6 +29,7 @@ for submodule_name in ModuleAPI.__all__:
     if hasattr(m, "__routes__"):
         routes.append(Include(BASE_PATH, name=m.__route_name__, routes=m.__routes__))
 
+
 app = App(routes=routes, components=components)
 
 if __name__ == '__main__':
