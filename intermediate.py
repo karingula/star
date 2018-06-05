@@ -3,7 +3,5 @@
 from abc import abstractmethod
 
 class End(object):
-    def __init__(self, car, residence, vacation):
-        self.car = car
-        self.residence = residence
-        self.vacation = vacation
+    def __init__(self, wealth):
+        self.wealth = wealth

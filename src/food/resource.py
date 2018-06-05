@@ -6,6 +6,7 @@ class FoodResource():
         print(type(eatery))
         return {
         'my_eats': eatery.eats,
+        'vacation': eatery.vacation
         }
     
     def eat_fancy(self, sample: Organic) -> str:
@@ -13,7 +14,7 @@ class FoodResource():
         return "welcome to fancy eating"
 
     def backy(self, backend: Backend):
-        print(backend.car)
+        print(backend.wealth)
         return "Backend testing"
     
     
