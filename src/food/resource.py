@@ -3,7 +3,7 @@ from components import Organic, Backend
 #views
 class FoodResource():
     def eat_nicely(self, eatery: Organic=None) -> dict:
-        print(type(eatery))
+        print("Eat Nicely:",type(eatery))
         return {
         'my_eats': eatery.eats,
         'vacation': eatery.vacation

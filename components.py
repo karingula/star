@@ -22,7 +22,7 @@ class BackendComponent(Component):
 
 class Organic(object):
     
-    def __init__(self, eats: dict):
+    def __init__(self, eats: dict, vacation: str):
         self.eats = eats
         self.vacation = vacation
 

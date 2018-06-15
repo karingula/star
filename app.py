@@ -4,6 +4,7 @@ from apistar.server.components import Component
 
 #project modules
 import components
+from hooks import SampleHook
 
 #stdlib
 import inspect, sys
@@ -30,7 +31,7 @@ for submodule_name in ModuleAPI.__all__:
         routes.append(Include(BASE_PATH, name=m.__route_name__, routes=m.__routes__))
 
 
-app = App(routes=routes, components=components)
+app = App(routes=routes, components=components, event_hooks=[SampleHook])
 
 if __name__ == '__main__':
     app.serve('127.0.0.1', 8888, debug=True)
